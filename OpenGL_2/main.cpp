@@ -22,7 +22,7 @@
 
 // Properties
 const GLuint WIDTH = 800, HEIGHT = 600;
-int SCREEN_WIDTH, SCREEN_HEIGHT;
+int SCREEN_WIDTH , SCREEN_HEIGHT;
 
 // Function prototypes
 void KeyCallback( GLFWwindow *window, int key, int scancode, int action, int mode );
@@ -221,25 +221,17 @@ int main( )
         
         glm::mat4 view;
         glm::mat4 projection;
+        view = camera.GetViewMatrix( );
+        projection = glm::perspective(camera.GetZoom( ), (GLfloat)SCREEN_WIDTH/(GLfloat)SCREEN_HEIGHT, 0.1f, 1000.0f);
         
-        if(cameraMode == 1){
-            projection = glm::perspective(camera.GetZoom( ), (GLfloat)SCREEN_WIDTH/(GLfloat)SCREEN_HEIGHT, 0.1f, 1000.0f);
-            // Create camera transformation
-            view = camera.GetViewMatrix( );
-        }else if (cameraMode == 2){
-            
-            std::cout << "CAMERA::IS::NOW::2" << std::endl;
-            
-           // projection = glm::ortho(-SCREEN_WIDTH*1, SCREEN_WIDTH*1, -SCREEN_HEIGHT*1, SCREEN_HEIGHT*1, -10, 10);
-            projection = glm::ortho(-SCREEN_WIDTH, SCREEN_WIDTH, -SCREEN_HEIGHT, SCREEN_HEIGHT);
-            
-            view  = camera.GetViewMatrix( );
-    
+       if (cameraMode == 2){
+           //camera.SetPositionTop();
            
+           projection = glm::ortho(-1, 1, -1, 1, -1, 1);
+           // std::cout << "CAMERA::IS::NOW::2" << std::endl;
             
-        }else if (cameraMode == 3){
-            
-        }
+            //camera.SetPositionTop();
+       }
         
         
         
@@ -319,7 +311,7 @@ void KeyCallback( GLFWwindow *window, int key, int scancode, int action, int mod
     if (key == GLFW_KEY_C && action == GLFW_PRESS) {
         
         cameraMode += 1;
-        if(cameraMode > 3){
+        if(cameraMode > 2){
             cameraMode = 1;
         }
         

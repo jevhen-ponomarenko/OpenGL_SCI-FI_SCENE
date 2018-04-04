@@ -23,7 +23,7 @@ enum Camera_Movement
 const GLfloat YAW        = -90.0f;
 const GLfloat PITCH      =  0.0f;
 const GLfloat SPEED      =  6.0f;
-const GLfloat SENSITIVTY =  0.25f;
+const GLfloat SENSITIVTY =  0.10f;
 const GLfloat ZOOM       =  45.0f;
 
 
@@ -58,16 +58,12 @@ public:
         return glm::lookAt( this->position, this->position + this->front, this->up );
     }
     
-    glm::vec3 GetPosition()
+    void SetPositionTop()
     {
-        return this->position;
+        this->position = glm::vec3(10.0f,10.0f,10.0f);
+       
+        
     }
-    
-    glm::vec3 GetUp()
-    {
-        return this->up;
-    }
-   
     
     // Processes input received from any keyboard-like input system. Accepts input parameter in the form of camera defined ENUM (to abstract it from windowing systems)
     void ProcessKeyboard( Camera_Movement direction, GLfloat deltaTime )
@@ -176,4 +172,6 @@ private:
         this->right = glm::normalize( glm::cross( this->front, this->worldUp ) );  // Normalize the vectors, because their length gets closer to 0 the more you look up or down which results in slower movement.
         this->up = glm::normalize( glm::cross( this->right, this->front ) );
     }
+    
+    
 };

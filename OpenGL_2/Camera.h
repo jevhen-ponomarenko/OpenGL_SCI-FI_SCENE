@@ -121,6 +121,7 @@ public:
     // Processes input received from a mouse scroll-wheel event. Only requires input on the vertical wheel-axis
     void ProcessMouseScroll( GLfloat yOffset )
     {
+        /*
         if ( this->zoom >= 1.0f && this->zoom <= 45.0f )
         {
             this->zoom -= yOffset;
@@ -135,6 +136,7 @@ public:
         {
             this->zoom = 45.0f;
         }
+         */
     }
     
     GLfloat GetZoom( )

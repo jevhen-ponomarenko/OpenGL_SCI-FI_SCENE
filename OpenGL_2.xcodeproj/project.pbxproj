@@ -72,6 +72,7 @@
 		AB2692D4206E86C400D2582F /* pvr_helper.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = pvr_helper.h; path = OpenGL_2/SOIL2/pvr_helper.h; sourceTree = SOURCE_ROOT; };
 		AB2692D5206E86C400D2582F /* SOIL2.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = SOIL2.c; path = OpenGL_2/SOIL2/SOIL2.c; sourceTree = SOURCE_ROOT; };
 		AB2692DA2071787400D2582F /* Camera.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Camera.h; sourceTree = "<group>"; };
+		ABAFC094207BBF50001007F9 /* Mesh.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Mesh.h; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -113,6 +114,7 @@
 				AB26929D20694FEB00D2582F /* main.cpp */,
 				AB2692AB206958B900D2582F /* Shader.h */,
 				AB2692DA2071787400D2582F /* Camera.h */,
+				ABAFC094207BBF50001007F9 /* Mesh.h */,
 			);
 			path = OpenGL_2;
 			sourceTree = "<group>";

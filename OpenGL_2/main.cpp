@@ -29,22 +29,24 @@ void KeyCallback( GLFWwindow *window, int key, int scancode, int action, int mod
 // void ScrollCallback( GLFWwindow *window, double xOffset, double yOffset );
 void MouseCallback( GLFWwindow *window, double xPos, double yPos );
 void DoMovement( );
+void CameraCallback(int cameraMode);
 
 // Camera
 Camera  camera(glm::vec3( 0.0f, 0.0f, 3.0f ) );
 
+bool freeCameraMode = true;
 
 GLfloat lastX = WIDTH / 2.0;
 GLfloat lastY = HEIGHT / 2.0;
 bool keys[1024];
 bool firstMouse = true;
-int cameraMode = 1;
+int cameraMode = 0;
 
 GLfloat deltaTime = 0.0f;
 GLfloat lastFrame = 0.0f;
 
 
-glm::vec3 lightPos (0.2f, 1.0f, 0.0f);
+glm::vec3 lightPos (0.2f, 1.0f, 10.0f);
 
 // The MAIN function, from here we start our application and run our Game loop
 int main( )
@@ -73,7 +75,7 @@ int main( )
     
     // Set the required callback functions
     glfwSetKeyCallback( window, KeyCallback );
-    glfwSetCursorPosCallback( window, MouseCallback );
+        glfwSetCursorPosCallback( window, MouseCallback );
    // glfwSetScrollCallback( window, ScrollCallback );
     
     // Options, removes the mouse cursor for a more immersive experience
@@ -99,130 +101,122 @@ int main( )
     glBlendFunc( GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA );
     
     // Setup and compile our shaders
-    Shader lampShader( "resources/shaders/lampe.vs", "resources/shaders/lamp.frag" );
+    Shader lampShader( "resources/shaders/lamp.vs", "resources/shaders/lamp.frag" );
     Shader lightingShader( "resources/shaders/lighting.vs", "resources/shaders/lighting.frag" );
 
     
     // Set up our vertex data (and buffer(s)) and attribute pointers
+
     GLfloat vertices[] =
     {
-        -0.5f, -0.5f, -0.5f,
-        0.5f, -0.5f, -0.5f,
-        0.5f,  0.5f, -0.5f,
-        0.5f,  0.5f, -0.5f,
-        -0.5f,  0.5f, -0.5f,
-        -0.5f, -0.5f, -0.5f,
+        -0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
+        0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
+        0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
+        0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
+        -0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
+        -0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
         
-        -0.5f, -0.5f,  0.5f,
-        0.5f, -0.5f,  0.5f,
-        0.5f,  0.5f,  0.5f,
-        0.5f,  0.5f,  0.5f,
-        -0.5f,  0.5f,  0.5f,
-        -0.5f, -0.5f,  0.5f,
+        -0.5f, -0.5f,  0.5f,  0.0f,  0.0f,  1.0f,
+        0.5f, -0.5f,  0.5f,  0.0f,  0.0f,  1.0f,
+        0.5f,  0.5f,  0.5f,  0.0f,  0.0f,  1.0f,
+        0.5f,  0.5f,  0.5f,  0.0f,  0.0f,  1.0f,
+        -0.5f,  0.5f,  0.5f,  0.0f,  0.0f,  1.0f,
+        -0.5f, -0.5f,  0.5f,  0.0f,  0.0f,  1.0f,
         
-        -0.5f,  0.5f,  0.5f,
-        -0.5f,  0.5f, -0.5f,
-        -0.5f, -0.5f, -0.5f,
-        -0.5f, -0.5f, -0.5f,
-        -0.5f, -0.5f,  0.5f,
-        -0.5f,  0.5f,  0.5f,
+        -0.5f,  0.5f,  0.5f, -1.0f,  0.0f,  0.0f,
+        -0.5f,  0.5f, -0.5f, -1.0f,  0.0f,  0.0f,
+        -0.5f, -0.5f, -0.5f, -1.0f,  0.0f,  0.0f,
+        -0.5f, -0.5f, -0.5f, -1.0f,  0.0f,  0.0f,
+        -0.5f, -0.5f,  0.5f, -1.0f,  0.0f,  0.0f,
+        -0.5f,  0.5f,  0.5f, -1.0f,  0.0f,  0.0f,
         
-        0.5f,  0.5f,  0.5f,
-        0.5f,  0.5f, -0.5f,
-        0.5f, -0.5f, -0.5f,
-        0.5f, -0.5f, -0.5f,
-        0.5f, -0.5f,  0.5f,
-        0.5f,  0.5f,  0.5f,
+        0.5f,  0.5f,  0.5f,  1.0f,  0.0f,  0.0f,
+        0.5f,  0.5f, -0.5f,  1.0f,  0.0f,  0.0f,
+        0.5f, -0.5f, -0.5f,  1.0f,  0.0f,  0.0f,
+        0.5f, -0.5f, -0.5f,  1.0f,  0.0f,  0.0f,
+        0.5f, -0.5f,  0.5f,  1.0f,  0.0f,  0.0f,
+        0.5f,  0.5f,  0.5f,  1.0f,  0.0f,  0.0f,
         
-        -0.5f, -0.5f, -0.5f,
-        0.5f, -0.5f, -0.5f,
-        0.5f, -0.5f,  0.5f,
-        0.5f, -0.5f,  0.5f,
-        -0.5f, -0.5f,  0.5f,
-        -0.5f, -0.5f, -0.5f,
+        -0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,
+        0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,
+        0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,
+        0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,
+        -0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,
+        -0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,
         
-        -0.5f,  0.5f, -0.5f,
-        0.5f,  0.5f, -0.5f,
-        0.5f,  0.5f,  0.5f,
-        0.5f,  0.5f,  0.5f,
-        -0.5f,  0.5f,  0.5f,
-        -0.5f,  0.5f, -0.5f
+        -0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,
+        0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,
+        0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,
+        0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,
+        -0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,
+        -0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f
     };
+
     
   
-    GLuint VBO, boxVAO;
-    glGenVertexArrays( 1, &boxVAO );
+    GLuint VBO, containerVAO;
+    glGenVertexArrays( 1, &containerVAO );
     glGenBuffers( 1, &VBO );
-    // Bind our Vertex Array Object first, then bind and set our buffers and pointers.
-    glBindVertexArray( boxVAO );
     
     glBindBuffer( GL_ARRAY_BUFFER, VBO );
     glBufferData( GL_ARRAY_BUFFER, sizeof( vertices ), vertices, GL_STATIC_DRAW );
     
+    glBindVertexArray( containerVAO );
     // Position attribute
-    glVertexAttribPointer( 0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof( GLfloat ), ( GLvoid * )0 );
+    glVertexAttribPointer( 0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof( GLfloat ), ( GLvoid * )0 );
     glEnableVertexAttribArray( 0 );
-    // TexCoord attribute
-//    glVertexAttribPointer( 2, 2, GL_FLOAT, GL_FALSE, 5 * sizeof( GLfloat ), ( GLvoid * )( 3 * sizeof( GLfloat ) ) );
-//    glEnableVertexAttribArray( 2 );
     
+    // Normal attribute
+    glVertexAttribPointer( 1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof( GLfloat ), ( GLvoid * )( 3 * sizeof( GLfloat ) ) );
+    glEnableVertexAttribArray( 1 );
+    glBindVertexArray( 0 );
+    
+    // Then, we set the light's VAO (VBO stays the same. After all, the vertices are the same for the light object (also a 3D cube))
     GLuint lightVAO;
     glGenVertexArrays( 1, &lightVAO );
-    glGenBuffers( 1, &VBO );
-    // Bind our Vertex Array Object first, then bind and set our buffers and pointers.
     glBindVertexArray( lightVAO );
-    
+    // We only need to bind to the VBO (to link it with glVertexAttribPointer), no need to fill it; the VBO's data already contains all we need.
     glBindBuffer( GL_ARRAY_BUFFER, VBO );
-    glBufferData( GL_ARRAY_BUFFER, sizeof( vertices ), vertices, GL_STATIC_DRAW );
-    
-    // Position attribute
-    glVertexAttribPointer( 0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof( GLfloat ), ( GLvoid * )0 );
+    // Set the vertex attributes (only position data for the lamp))
+    glVertexAttribPointer( 0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof( GLfloat ), ( GLvoid * )0 ); // Note that we skip over the normal vectors
     glEnableVertexAttribArray( 0 );
+    glBindVertexArray( 0 );
     
-    glBindVertexArray( 0 ); // Unbind VAO
-    
-    // Load and create a texture
-    GLuint texture;
-//    // --== TEXTURE == --
-//    glGenTextures( 1, &texture );
-//    glBindTexture( GL_TEXTURE_2D, texture ); // All upcoming GL_TEXTURE_2D operations now have effect on our texture object
-//    // Set our texture parameters
-//    glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT );
-//    glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT );
-//    // Set texture filtering
-//    glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR );
-//    glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
-//    // Load, create texture and generate mipmaps
-//    int width, height;
-//    unsigned char *image = SOIL_load_image( "resources/images/image2.png", &width, &height, 0, SOIL_LOAD_RGB );
-//    glTexImage2D( GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, image );
-//    glGenerateMipmap( GL_TEXTURE_2D );
-//    SOIL_free_image_data( image );
-//    glBindTexture( GL_TEXTURE_2D, 0 ); // Unbind texture when done, so we won't accidentily mess up our texture.
-    
-     glm::mat4 projection = glm::perspective(camera.GetZoom( ), (GLfloat)SCREEN_WIDTH/(GLfloat)SCREEN_HEIGHT, 0.1f, 1000.0f);
-    
+    glm::mat4 projection = glm::perspective( camera.GetZoom( ), ( GLfloat )SCREEN_WIDTH / ( GLfloat )SCREEN_HEIGHT, 0.1f, 100.0f );
     // Game loop
     while( !glfwWindowShouldClose( window ) )
     {
-        // Set frame time
+        // add after the code is displayed and working
+        //lightPos.x -= 0.01f;
+        //lightPos.z -= 0.01f;
+        
+        // Calculate deltatime of current frame
         GLfloat currentFrame = glfwGetTime( );
         deltaTime = currentFrame - lastFrame;
         lastFrame = currentFrame;
         
-        // Check and call events
+        //camera changing
+        //CameraCallback(cameraMode);
+        
+        // Check if any events have been activiated (key pressed, mouse moved etc.) and call corresponding response functions
         glfwPollEvents( );
+    
         DoMovement( );
         
         // Clear the colorbuffer
         glClearColor( 0.1f, 0.1f, 0.1f, 1.0f );
         glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
         
+        // Use cooresponding shader when setting uniforms/drawing objects
         lightingShader.Use( );
         GLint objectColorLoc = glGetUniformLocation( lightingShader.Program, "objectColor" );
-        GLint lightColorLoc  = glGetUniformLocation( lightingShader.Program, "lightColor" );
+        GLint lightColorLoc = glGetUniformLocation( lightingShader.Program, "lightColor" );
+        GLint lightPosLoc = glGetUniformLocation( lightingShader.Program, "lightPos" );
+        GLint viewPosLoc = glGetUniformLocation( lightingShader.Program, "viewPos" );
         glUniform3f( objectColorLoc, 1.0f, 0.5f, 0.31f );
-        glUniform3f( lightColorLoc,  1.0f, 0.5f, 1.0f );
+        glUniform3f( lightColorLoc, 1.0f, 1.0f, 1.0f );
+        glUniform3f( lightPosLoc, lightPos.x, lightPos.y, lightPos.z );
+        glUniform3f( viewPosLoc, camera.GetPosition( ).x, camera.GetPosition( ).y, camera.GetPosition( ).z );
         
         // Create camera transformations
         glm::mat4 view;
@@ -230,15 +224,15 @@ int main( )
         
         // Get the uniform locations
         GLint modelLoc = glGetUniformLocation( lightingShader.Program, "model" );
-        GLint viewLoc = glGetUniformLocation( lightingShader.Program,  "view" );
-        GLint projLoc = glGetUniformLocation( lightingShader.Program,  "projection" );
+        GLint viewLoc = glGetUniformLocation( lightingShader.Program, "view" );
+        GLint projLoc = glGetUniformLocation( lightingShader.Program, "projection" );
         
         // Pass the matrices to the shader
         glUniformMatrix4fv( viewLoc, 1, GL_FALSE, glm::value_ptr( view ) );
         glUniformMatrix4fv( projLoc, 1, GL_FALSE, glm::value_ptr( projection ) );
         
         // Draw the container (using container's vertex attributes)
-        glBindVertexArray( boxVAO );
+        glBindVertexArray( containerVAO );
         glm::mat4 model;
         glUniformMatrix4fv( modelLoc, 1, GL_FALSE, glm::value_ptr( model ) );
         glDrawArrays( GL_TRIANGLES, 0, 36 );
@@ -246,12 +240,10 @@ int main( )
         
         // Also draw the lamp object, again binding the appropriate shader
         lampShader.Use( );
-        
         // Get location objects for the matrices on the lamp shader (these could be different on a different shader)
         modelLoc = glGetUniformLocation( lampShader.Program, "model" );
         viewLoc = glGetUniformLocation( lampShader.Program, "view" );
         projLoc = glGetUniformLocation( lampShader.Program, "projection" );
-        
         // Set matrices
         glUniformMatrix4fv( viewLoc, 1, GL_FALSE, glm::value_ptr( view ) );
         glUniformMatrix4fv( projLoc, 1, GL_FALSE, glm::value_ptr( projection ) );
@@ -259,23 +251,21 @@ int main( )
         model = glm::translate( model, lightPos );
         model = glm::scale( model, glm::vec3( 0.2f ) ); // Make it a smaller cube
         glUniformMatrix4fv( modelLoc, 1, GL_FALSE, glm::value_ptr( model ) );
-        
         // Draw the light object (using light's vertex attributes)
         glBindVertexArray( lightVAO );
         glDrawArrays( GL_TRIANGLES, 0, 36 );
         glBindVertexArray( 0 );
         
-
-        // Swap the buffers
+        // Swap the screen buffers
         glfwSwapBuffers( window );
     }
     
-    // Properly de-allocate all resources once they've outlived their purpose
-    glDeleteVertexArrays( 1, &boxVAO );
+    glDeleteVertexArrays( 1, &containerVAO );
     glDeleteVertexArrays( 1, &lightVAO );
     glDeleteBuffers( 1, &VBO );
-    glfwTerminate( );
     
+    // Terminate GLFW, clearing any resources allocated by GLFW.
+    glfwTerminate( );
     return EXIT_SUCCESS;
 }
 
@@ -314,10 +304,21 @@ void KeyCallback( GLFWwindow *window, int key, int scancode, int action, int mod
     
     if (key == GLFW_KEY_C && action == GLFW_PRESS) {
         
-        cameraMode += 1;
-        if(cameraMode > 2){
-            cameraMode = 1;
+        cameraMode++;
+        if(cameraMode > 2)
+            
+            cameraMode = 0;
+        
+        else if(cameraMode == 1){
+            
+            camera.SetPositionTop();
+            
         }
+        else if (cameraMode == 2){
+            
+            camera.SetPositionSide();
+        }
+        
         
     }
     
@@ -351,7 +352,6 @@ void MouseCallback( GLFWwindow *window, double xPos, double yPos )
     
     camera.ProcessMouseMovement( xOffset, yOffset );
 }
-
 
 /*void ScrollCallback( GLFWwindow *window, double xOffset, double yOffset )
 {

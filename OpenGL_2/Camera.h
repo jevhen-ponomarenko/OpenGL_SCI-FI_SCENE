@@ -58,10 +58,21 @@ public:
         return glm::lookAt( this->position, this->position + this->front, this->up );
     }
     
+    void SetPositionSide()
+    {
+        this->position = glm::vec3(0.0f,3.0f,10.0f);
+        
+        this->yaw -= 90;
+        updateCameraVectors();
+        
+    }
+    
     void SetPositionTop()
     {
-        this->position = glm::vec3(10.0f,10.0f,10.0f);
-       
+        this->position = glm::vec3(0.0f,20.0f,0.0f);
+      
+        this->pitch -= 90;
+        updateCameraVectors();
         
     }
     
@@ -137,6 +148,10 @@ public:
             this->zoom = 45.0f;
         }
          */
+    }
+    glm::vec3 GetPosition( )
+    {
+        return this->position;
     }
     
     GLfloat GetZoom( )

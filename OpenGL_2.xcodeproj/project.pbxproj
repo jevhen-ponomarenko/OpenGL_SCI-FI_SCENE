@@ -16,6 +16,7 @@
 		AB2692D7206E86C400D2582F /* image_helper.c in Sources */ = {isa = PBXBuildFile; fileRef = AB2692C4206E86C300D2582F /* image_helper.c */; };
 		AB2692D8206E86C400D2582F /* image_DXT.c in Sources */ = {isa = PBXBuildFile; fileRef = AB2692CC206E86C400D2582F /* image_DXT.c */; };
 		AB2692D9206E86C400D2582F /* SOIL2.c in Sources */ = {isa = PBXBuildFile; fileRef = AB2692D5206E86C400D2582F /* SOIL2.c */; };
+		ABAFC096207E609B001007F9 /* libassimp.4.1.0.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = ABAFC095207E609B001007F9 /* libassimp.4.1.0.dylib */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -73,6 +74,8 @@
 		AB2692D5206E86C400D2582F /* SOIL2.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = SOIL2.c; path = OpenGL_2/SOIL2/SOIL2.c; sourceTree = SOURCE_ROOT; };
 		AB2692DA2071787400D2582F /* Camera.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Camera.h; sourceTree = "<group>"; };
 		ABAFC094207BBF50001007F9 /* Mesh.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Mesh.h; sourceTree = "<group>"; };
+		ABAFC095207E609B001007F9 /* libassimp.4.1.0.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libassimp.4.1.0.dylib; path = ../../../../../usr/local/Cellar/assimp/4.1.0/lib/libassimp.4.1.0.dylib; sourceTree = "<group>"; };
+		ABAFC097207E6900001007F9 /* Model.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Model.h; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -80,6 +83,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				ABAFC096207E609B001007F9 /* libassimp.4.1.0.dylib in Frameworks */,
 				AB2692B020695A5000D2582F /* libGLEW.2.1.0.dylib in Frameworks */,
 				AB2692AF20695A1000D2582F /* libglfw.3.2.dylib in Frameworks */,
 				AB2692A62069500100D2582F /* OpenGL.framework in Frameworks */,
@@ -115,6 +119,7 @@
 				AB2692AB206958B900D2582F /* Shader.h */,
 				AB2692DA2071787400D2582F /* Camera.h */,
 				ABAFC094207BBF50001007F9 /* Mesh.h */,
+				ABAFC097207E6900001007F9 /* Model.h */,
 			);
 			path = OpenGL_2;
 			sourceTree = "<group>";
@@ -122,6 +127,7 @@
 		AB2692A42069500100D2582F /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				ABAFC095207E609B001007F9 /* libassimp.4.1.0.dylib */,
 				AB2692BD206D84ED00D2582F /* AppKit.framework */,
 				AB2692BA206D843900D2582F /* CoreFoundation.framework */,
 				AB2692A92069503600D2582F /* libglfw.3.2.dylib */,
@@ -341,6 +347,7 @@
 				LIBRARY_SEARCH_PATHS = (
 					/usr/local/Cellar/glfw/3.2.1/lib,
 					/usr/local/Cellar/glew/2.1.0/lib,
+					/usr/local/Cellar/assimp/4.1.0/lib,
 				);
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SYSTEM_HEADER_SEARCH_PATHS = "";
@@ -357,6 +364,7 @@
 				LIBRARY_SEARCH_PATHS = (
 					/usr/local/Cellar/glfw/3.2.1/lib,
 					/usr/local/Cellar/glew/2.1.0/lib,
+					/usr/local/Cellar/assimp/4.1.0/lib,
 				);
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SYSTEM_HEADER_SEARCH_PATHS = "";

@@ -19,6 +19,7 @@
 #include "Shader.h"
 #include "Camera.h"
 #include "Model.h"
+#include "Texture.h"
 
 
 // Function prototypes
@@ -96,9 +97,9 @@ int main( )
     
     // Build and compile our shader program
     Shader lightingShader( "resources/shaders/lighting.vs", "resources/shaders/lighting.frag" );
-    Shader lampShader( "resources/shaders/lamp.vs", "resources/shaders/lamp.frag" );
+   
     
-    Shader shader( "resources/shaders/modelLoading.vs", "resources/shaders/modelLoading.frag" );
+    Shader skyboxShader( "resources/shaders/skybox.vs", "resources/shaders/skybox.frag" );
     
     Model ourModel2( "resources/models/nanosuit.obj" );
     Model bridgeModel( "resources/models/bridge/bridge.obj" );
@@ -114,13 +115,75 @@ int main( )
     };
     
     
-    // First, set the container's VAO (and VBO)
+    GLfloat skyboxVertices[] = {
+        // Positions
+        -1.0f,  1.0f, -1.0f,
+        -1.0f, -1.0f, -1.0f,
+        1.0f, -1.0f, -1.0f,
+        1.0f, -1.0f, -1.0f,
+        1.0f,  1.0f, -1.0f,
+        -1.0f,  1.0f, -1.0f,
+        
+        -1.0f, -1.0f,  1.0f,
+        -1.0f, -1.0f, -1.0f,
+        -1.0f,  1.0f, -1.0f,
+        -1.0f,  1.0f, -1.0f,
+        -1.0f,  1.0f,  1.0f,
+        -1.0f, -1.0f,  1.0f,
+        
+        1.0f, -1.0f, -1.0f,
+        1.0f, -1.0f,  1.0f,
+        1.0f,  1.0f,  1.0f,
+        1.0f,  1.0f,  1.0f,
+        1.0f,  1.0f, -1.0f,
+        1.0f, -1.0f, -1.0f,
+        
+        -1.0f, -1.0f,  1.0f,
+        -1.0f,  1.0f,  1.0f,
+        1.0f,  1.0f,  1.0f,
+        1.0f,  1.0f,  1.0f,
+        1.0f, -1.0f,  1.0f,
+        -1.0f, -1.0f,  1.0f,
+        
+        -1.0f,  1.0f, -1.0f,
+        1.0f,  1.0f, -1.0f,
+        1.0f,  1.0f,  1.0f,
+        1.0f,  1.0f,  1.0f,
+        -1.0f,  1.0f,  1.0f,
+        -1.0f,  1.0f, -1.0f,
+        
+        -1.0f, -1.0f, -1.0f,
+        -1.0f, -1.0f,  1.0f,
+        1.0f, -1.0f, -1.0f,
+        1.0f, -1.0f, -1.0f,
+        -1.0f, -1.0f,  1.0f,
+        1.0f, -1.0f,  1.0f
+    };
     
   
     
   
     // Then, we set the light's VAO (VBO stays the same. After all, the vertices are the same for the light object (also a 3D cube))
-   
+    GLuint skyboxVAO, skyboxVBO;
+    glGenVertexArrays( 1, &skyboxVAO );
+    glGenBuffers( 1, &skyboxVBO );
+    glBindVertexArray( skyboxVAO );
+    glBindBuffer( GL_ARRAY_BUFFER, skyboxVBO );
+    glBufferData( GL_ARRAY_BUFFER, sizeof( skyboxVertices ), &skyboxVertices, GL_STATIC_DRAW );
+    glEnableVertexAttribArray( 0 );
+    glVertexAttribPointer( 0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof( GLfloat ), ( GLvoid * ) 0 );
+    glBindVertexArray(0);
+    
+    
+    // Cubemap (Skybox)
+    vector<const GLchar*> faces;
+    faces.push_back( "resources/images/skybox/right.png" );
+    faces.push_back( "resources/images/skybox/left.png" );
+    faces.push_back( "resources/images/skybox/top.png" );
+    faces.push_back( "resources/images/skybox/bottom.png" );
+    faces.push_back( "resources/images/skybox/back.png" );
+    faces.push_back( "resources/images/skybox/front.png" );
+    GLuint cubemapTexture = TextureLoading::LoadCubemap( faces );
     
    
     
@@ -157,8 +220,7 @@ int main( )
         lightingShader.Use( );
         GLint viewPosLoc = glGetUniformLocation( lightingShader.Program, "viewPos" );
         glUniform3f( viewPosLoc, camera.GetPosition( ).x, camera.GetPosition( ).y, camera.GetPosition( ).z);
-        // Set material properties
-        glUniform1f( glGetUniformLocation( lightingShader.Program, "material.shininess" ), 32.0f );
+        
         
         // Directional light
         glUniform3f( glGetUniformLocation( lightingShader.Program, "dirLight.direction" ), -0.2f, -1.0f, -0.3f );
@@ -224,6 +286,11 @@ int main( )
         GLint viewLoc = glGetUniformLocation( lightingShader.Program, "view" );
         GLint projLoc = glGetUniformLocation( lightingShader.Program, "projection" );
         // Pass the matrices to the shader
+       
+        
+        
+        
+        
         glUniformMatrix4fv( modelLoc, 1, GL_FALSE, glm::value_ptr( model ) );
         glUniformMatrix4fv( viewLoc, 1, GL_FALSE, glm::value_ptr( view ) );
         glUniformMatrix4fv( projLoc, 1, GL_FALSE, glm::value_ptr( projection ) );
@@ -242,6 +309,9 @@ int main( )
         glUniformMatrix4fv( modelLoc, 1, GL_FALSE, glm::value_ptr( model ) );
         bridgeModel.Draw( lightingShader );
         
+        
+       
+
         
      
         // Draw the container (using container's vertex attributes)

@@ -10,6 +10,12 @@
 
 // Other Libs
 #include "SOIL2/SOIL2.h"
+
+#include "BULLET/BulletDynamics/ConstraintSolver/btSequentialImpulseConstraintSolver.h"
+#include "BULLET/BulletDynamics/Dynamics/btDiscreteDynamicsWorld.h"
+#include "BULLET/btBulletCollisionCommon.h"
+
+
 // GLM Mathematics
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
@@ -45,7 +51,7 @@ glm::vec3 lightPos( 1.2f, 1.0f, 2.0f );
 GLfloat deltaTime = 0.0f;    // Time between current frame and last frame
 GLfloat lastFrame = 0.0f;      // Time of last frame
 
-// The MAIN function, from here we start the application and run the game loop
+
 int main( )
 {
     // Init GLFW
@@ -58,7 +64,7 @@ int main( )
     glfwWindowHint( GLFW_RESIZABLE, GL_FALSE );
     
     // Create a GLFWwindow object that we can use for GLFW's functions
-    GLFWwindow* window = glfwCreateWindow( WIDTH, HEIGHT, "SendNudesYaBish", nullptr, nullptr );
+    GLFWwindow *window = glfwCreateWindow( WIDTH, HEIGHT, "SendNudesYaBish", nullptr, nullptr );
     
     if ( nullptr == window )
     {
@@ -94,26 +100,28 @@ int main( )
     // OpenGL options
     glEnable( GL_DEPTH_TEST );
     
+    btBroadphaseInterface* broadphase = new btDbvtBroadphase();
     
-    // Build and compile our shader program
+    // Set up the collision configuration and dispatcher
+    btDefaultCollisionConfiguration* collisionConfiguration = new btDefaultCollisionConfiguration();
+    btCollisionDispatcher* dispatcher = new btCollisionDispatcher(collisionConfiguration);
+    
+    // The actual physics solver
+    btSequentialImpulseConstraintSolver* solver = new btSequentialImpulseConstraintSolver;
+    
+    // The world.
+    btDiscreteDynamicsWorld* dynamicsWorld = new btDiscreteDynamicsWorld(dispatcher,broadphase,solver,collisionConfiguration);
+    dynamicsWorld->setGravity(btVector3(0,-9.81f,0));
+    
+    // Setup and compile our shaders
     Shader lightingShader( "resources/shaders/lighting.vs", "resources/shaders/lighting.frag" );
-   
+    
     
     Shader skyboxShader( "resources/shaders/skybox.vs", "resources/shaders/skybox.frag" );
     
     Model ourModel2( "resources/models/nanosuit.obj" );
     Model bridgeModel( "resources/models/bridge/bridge.obj" );
-    
-    
-    // Set up vertex data (and buffer(s)) and attribute pointers
- 
-    glm::vec3 pointLightPositions[] = {
-        glm::vec3(  0.7f,  0.2f,  2.0f      ),
-        glm::vec3(  2.3f, -3.3f, -4.0f      ),
-        glm::vec3(  -4.0f,  2.0f, -12.0f    ),
-        glm::vec3(  0.0f,  0.0f, -3.0f      )
-    };
-    
+
     
     GLfloat skyboxVertices[] = {
         // Positions
@@ -160,10 +168,15 @@ int main( )
         1.0f, -1.0f,  1.0f
     };
     
-  
+    glm::vec3 pointLightPositions[] = {
+        glm::vec3(  0.7f,  0.2f,  2.0f      ),
+        glm::vec3(  2.3f, -3.3f, -4.0f      ),
+        glm::vec3(  -4.0f,  2.0f, -12.0f    ),
+        glm::vec3(  0.0f,  0.0f, -3.0f      )
+    };
+
     
-  
-    // Then, we set the light's VAO (VBO stays the same. After all, the vertices are the same for the light object (also a 3D cube))
+    // Setup skybox VAO
     GLuint skyboxVAO, skyboxVBO;
     glGenVertexArrays( 1, &skyboxVAO );
     glGenBuffers( 1, &skyboxVBO );
@@ -174,6 +187,8 @@ int main( )
     glVertexAttribPointer( 0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof( GLfloat ), ( GLvoid * ) 0 );
     glBindVertexArray(0);
     
+    // Load textures
+    GLuint cubeTexture = TextureLoading::LoadTexture( "resources/images/container2.png" );
     
     // Cubemap (Skybox)
     vector<const GLchar*> faces;
@@ -185,35 +200,28 @@ int main( )
     faces.push_back( "resources/images/skybox/front.png" );
     GLuint cubemapTexture = TextureLoading::LoadCubemap( faces );
     
-   
     
-    
-    // Set texture units
-    lightingShader.Use( );
-    glUniform1i( glGetUniformLocation( lightingShader.Program, "material.diffuse" ), 0 );
-    glUniform1i( glGetUniformLocation( lightingShader.Program, "material.specular" ), 1 );
-    
-    glm::mat4 projection = glm::perspective( camera.GetZoom( ), ( GLfloat )SCREEN_WIDTH / ( GLfloat )SCREEN_HEIGHT, 0.1f, 100.0f );
+    glm::mat4 projection = glm::perspective( camera.GetZoom( ), ( float )SCREEN_WIDTH/( float )SCREEN_HEIGHT, 0.1f, 1000.0f );
     
     // Game loop
-    while ( !glfwWindowShouldClose( window ) )
+    while( !glfwWindowShouldClose( window ) )
     {
-        // add after the code is displayed and working
-        //lightPos.x -= 0.01f;
-        //lightPos.z -= 0.01f;
-        
-        // Calculate deltatime of current frame
+        // Set frame time
         GLfloat currentFrame = glfwGetTime( );
         deltaTime = currentFrame - lastFrame;
         lastFrame = currentFrame;
         
-        // Check if any events have been activiated (key pressed, mouse moved etc.) and call corresponding response functions
+        // Check and call events
         glfwPollEvents( );
         DoMovement( );
         
         // Clear the colorbuffer
-        glClearColor( 0.1f, 0.1f, 0.1f, 1.0f );
+        glClearColor( 0.05f, 0.05f, 0.05f, 1.0f );
         glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
+        
+        
+        glm::mat4 model;
+        glm::mat4 view ;
         
         
         
@@ -277,57 +285,59 @@ int main( )
         glUniform1f( glGetUniformLocation( lightingShader.Program, "spotLight.outerCutOff" ), glm::cos( glm::radians( 15.0f ) ) );
         
         
-        glm::mat4 view = camera.GetViewMatrix( );
-        glm::mat4 model;
-        model = glm::translate(model, glm::vec3(-0.2f, -1.0f, -0.3f));
+        view = camera.GetViewMatrix( );
+        
+        
+       
+        model = glm::translate(model, glm::vec3(1.2f, 3.0f, 5.0f));
         model = glm::scale(model, glm::vec3(0.5f, 0.5f, 0.5f));
-  
+        
+        
         GLint modelLoc = glGetUniformLocation( lightingShader.Program, "model" );
         GLint viewLoc = glGetUniformLocation( lightingShader.Program, "view" );
         GLint projLoc = glGetUniformLocation( lightingShader.Program, "projection" );
-        // Pass the matrices to the shader
-       
-        
-        
-        
         
         glUniformMatrix4fv( modelLoc, 1, GL_FALSE, glm::value_ptr( model ) );
         glUniformMatrix4fv( viewLoc, 1, GL_FALSE, glm::value_ptr( view ) );
         glUniformMatrix4fv( projLoc, 1, GL_FALSE, glm::value_ptr( projection ) );
+        
         ourModel2.Draw( lightingShader );
-      
         
+        model = glm::mat4(1.0);
         
-        // Draw the loaded model
+        model = glm::scale(model, glm::vec3(5.0f,8.0f,5.0f));
         
-        
-
-        
-        
-        
-        model = glm::scale(model, glm::vec3(5.0f,10.0f,5.0f));
         glUniformMatrix4fv( modelLoc, 1, GL_FALSE, glm::value_ptr( model ) );
         bridgeModel.Draw( lightingShader );
-        
-        
-       
 
         
-     
-        // Draw the container (using container's vertex attributes)
-       
         
         
-        // Swap the screen buffers
+        // Draw skybox as last
+        glDepthFunc( GL_LEQUAL );  // Change depth function so depth test passes when values are equal to depth buffer's content
+        skyboxShader.Use( );
+        view = glm::mat4( glm::mat3( camera.GetViewMatrix( ) ) );    // Remove any translation component of the view matrix
+        
+        glUniformMatrix4fv( glGetUniformLocation( skyboxShader.Program, "view" ), 1, GL_FALSE, glm::value_ptr( view ) );
+        glUniformMatrix4fv( glGetUniformLocation( skyboxShader.Program, "projection" ), 1, GL_FALSE, glm::value_ptr( projection ) );
+        
+        // skybox cube
+        glBindVertexArray( skyboxVAO );
+        glBindTexture( GL_TEXTURE_CUBE_MAP, cubemapTexture );
+        glDrawArrays( GL_TRIANGLES, 0, 36 );
+        glBindVertexArray( 0 );
+        glDepthFunc( GL_LESS ); // Set depth function back to default
+        
+        
+        
+        // Swap the buffers
         glfwSwapBuffers( window );
     }
     
-    
-    
-    // Terminate GLFW, clearing any resources allocated by GLFW.
     glfwTerminate( );
-    return EXIT_SUCCESS;
+    return 0;
 }
+
 
 // Moves/alters the camera positions based on user input
 void DoMovement( )

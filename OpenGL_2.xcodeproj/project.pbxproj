@@ -16,6 +16,9 @@
 		AB2692D7206E86C400D2582F /* image_helper.c in Sources */ = {isa = PBXBuildFile; fileRef = AB2692C4206E86C300D2582F /* image_helper.c */; };
 		AB2692D8206E86C400D2582F /* image_DXT.c in Sources */ = {isa = PBXBuildFile; fileRef = AB2692CC206E86C400D2582F /* image_DXT.c */; };
 		AB2692D9206E86C400D2582F /* SOIL2.c in Sources */ = {isa = PBXBuildFile; fileRef = AB2692D5206E86C400D2582F /* SOIL2.c */; };
+		AB3F607D20A0919800224304 /* BulletCollision.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AB3F607720A0813D00224304 /* BulletCollision.framework */; };
+		AB3F607E20A091CA00224304 /* Bullet3Common.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AB3F607B20A0817E00224304 /* Bullet3Common.framework */; };
+		AB3F608020A091EA00224304 /* BulletDynamics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AB3F607F20A091EA00224304 /* BulletDynamics.framework */; };
 		ABAFC096207E609B001007F9 /* libassimp.4.1.0.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = ABAFC095207E609B001007F9 /* libassimp.4.1.0.dylib */; };
 /* End PBXBuildFile section */
 
@@ -74,6 +77,11 @@
 		AB2692D5206E86C400D2582F /* SOIL2.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = SOIL2.c; path = OpenGL_2/SOIL2/SOIL2.c; sourceTree = SOURCE_ROOT; };
 		AB2692DA2071787400D2582F /* Camera.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Camera.h; sourceTree = "<group>"; };
 		AB3F6074209731EB00224304 /* Texture.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Texture.h; sourceTree = "<group>"; };
+		AB3F607720A0813D00224304 /* BulletCollision.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = BulletCollision.framework; path = ../../../../../Library/Frameworks/BulletCollision.framework; sourceTree = "<group>"; };
+		AB3F607920A0816400224304 /* LinearMath.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = LinearMath.framework; path = ../../../../../Library/Frameworks/LinearMath.framework; sourceTree = "<group>"; };
+		AB3F607B20A0817E00224304 /* Bullet3Common.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Bullet3Common.framework; path = ../../../../../Library/Frameworks/Bullet3Common.framework; sourceTree = "<group>"; };
+		AB3F607F20A091EA00224304 /* BulletDynamics.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = BulletDynamics.framework; path = ../../../../../Library/Frameworks/BulletDynamics.framework; sourceTree = "<group>"; };
+		AB3F608420A0969C00224304 /* BULLET */ = {isa = PBXFileReference; lastKnownFileType = folder; path = BULLET; sourceTree = "<group>"; };
 		ABAFC094207BBF50001007F9 /* Mesh.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Mesh.h; sourceTree = "<group>"; };
 		ABAFC095207E609B001007F9 /* libassimp.4.1.0.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libassimp.4.1.0.dylib; path = ../../../../../usr/local/Cellar/assimp/4.1.0/lib/libassimp.4.1.0.dylib; sourceTree = "<group>"; };
 		ABAFC097207E6900001007F9 /* Model.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Model.h; sourceTree = "<group>"; };
@@ -84,6 +92,9 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				AB3F608020A091EA00224304 /* BulletDynamics.framework in Frameworks */,
+				AB3F607E20A091CA00224304 /* Bullet3Common.framework in Frameworks */,
+				AB3F607D20A0919800224304 /* BulletCollision.framework in Frameworks */,
 				ABAFC096207E609B001007F9 /* libassimp.4.1.0.dylib in Frameworks */,
 				AB2692B020695A5000D2582F /* libGLEW.2.1.0.dylib in Frameworks */,
 				AB2692AF20695A1000D2582F /* libglfw.3.2.dylib in Frameworks */,
@@ -115,6 +126,7 @@
 		AB26929C20694FEB00D2582F /* OpenGL_2 */ = {
 			isa = PBXGroup;
 			children = (
+				AB3F608420A0969C00224304 /* BULLET */,
 				AB2692AE2069597A00D2582F /* resources */,
 				AB26929D20694FEB00D2582F /* main.cpp */,
 				AB2692AB206958B900D2582F /* Shader.h */,
@@ -129,6 +141,10 @@
 		AB2692A42069500100D2582F /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				AB3F607F20A091EA00224304 /* BulletDynamics.framework */,
+				AB3F607B20A0817E00224304 /* Bullet3Common.framework */,
+				AB3F607920A0816400224304 /* LinearMath.framework */,
+				AB3F607720A0813D00224304 /* BulletCollision.framework */,
 				ABAFC095207E609B001007F9 /* libassimp.4.1.0.dylib */,
 				AB2692BD206D84ED00D2582F /* AppKit.framework */,
 				AB2692BA206D843900D2582F /* CoreFoundation.framework */,
@@ -344,6 +360,10 @@
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				CODE_SIGN_STYLE = Automatic;
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(LOCAL_LIBRARY_DIR)/Frameworks",
+				);
 				HEADER_SEARCH_PATHS = /usr/local/include;
 				INSTALL_PATH = /usr/local/include;
 				LIBRARY_SEARCH_PATHS = (
@@ -361,6 +381,10 @@
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				CODE_SIGN_STYLE = Automatic;
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(LOCAL_LIBRARY_DIR)/Frameworks",
+				);
 				HEADER_SEARCH_PATHS = /usr/local/include;
 				INSTALL_PATH = /usr/local/include;
 				LIBRARY_SEARCH_PATHS = (

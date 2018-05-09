@@ -24,6 +24,7 @@ GLint TextureFromFile( const char *path, string directory );
 class Model
 {
 public:
+    int id;
     /*  Functions   */
     // Constructor, expects a filepath to a 3D model.
     Model( GLchar *path )

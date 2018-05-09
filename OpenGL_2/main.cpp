@@ -11,9 +11,7 @@
 // Other Libs
 #include "SOIL2/SOIL2.h"
 
-#include "BULLET/BulletDynamics/ConstraintSolver/btSequentialImpulseConstraintSolver.h"
-#include "BULLET/BulletDynamics/Dynamics/btDiscreteDynamicsWorld.h"
-#include "BULLET/btBulletCollisionCommon.h"
+
 
 
 // GLM Mathematics
@@ -31,7 +29,10 @@
 // Function prototypes
 void KeyCallback( GLFWwindow *window, int key, int scancode, int action, int mode );
 void MouseCallback( GLFWwindow *window, double xPos, double yPos );
+void MouseButtonCallback( GLFWwindow *window, int button, int actions, int mods );
 void DoMovement( );
+void processSelection(double xx, double yy);
+
 
 // Window dimensions
 const GLuint WIDTH = 800, HEIGHT = 600;
@@ -50,6 +51,7 @@ glm::vec3 lightPos( 1.2f, 1.0f, 2.0f );
 // Deltatime
 GLfloat deltaTime = 0.0f;    // Time between current frame and last frame
 GLfloat lastFrame = 0.0f;      // Time of last frame
+
 
 
 int main( )
@@ -81,9 +83,10 @@ int main( )
     // Set the required callback functions
     glfwSetKeyCallback( window, KeyCallback );
     glfwSetCursorPosCallback( window, MouseCallback );
+    glfwSetMouseButtonCallback(window, MouseButtonCallback);
     
     // GLFW Options
-    glfwSetInputMode( window, GLFW_CURSOR, GLFW_CURSOR_DISABLED );
+    glfwSetInputMode( window, GLFW_CURSOR, GLFW_CURSOR_NORMAL );
     
     // Set this to true so GLEW knows to use a modern approach to retrieving function pointers and extensions
     glewExperimental = GL_TRUE;
@@ -100,28 +103,20 @@ int main( )
     // OpenGL options
     glEnable( GL_DEPTH_TEST );
     
-    btBroadphaseInterface* broadphase = new btDbvtBroadphase();
     
-    // Set up the collision configuration and dispatcher
-    btDefaultCollisionConfiguration* collisionConfiguration = new btDefaultCollisionConfiguration();
-    btCollisionDispatcher* dispatcher = new btCollisionDispatcher(collisionConfiguration);
-    
-    // The actual physics solver
-    btSequentialImpulseConstraintSolver* solver = new btSequentialImpulseConstraintSolver;
-    
-    // The world.
-    btDiscreteDynamicsWorld* dynamicsWorld = new btDiscreteDynamicsWorld(dispatcher,broadphase,solver,collisionConfiguration);
-    dynamicsWorld->setGravity(btVector3(0,-9.81f,0));
     
     // Setup and compile our shaders
     Shader lightingShader( "resources/shaders/lighting.vs", "resources/shaders/lighting.frag" );
-    
-    
+    Shader pickingShader("resources/shaders/picking.vs", "resources/shaders/picking.frag");
     Shader skyboxShader( "resources/shaders/skybox.vs", "resources/shaders/skybox.frag" );
+    
     
     Model ourModel2( "resources/models/nanosuit.obj" );
     Model bridgeModel( "resources/models/bridge/bridge.obj" );
+    Model startModel( "resources/models/menu/start.obj" );
+    
 
+    
     
     GLfloat skyboxVertices[] = {
         // Positions
@@ -219,17 +214,14 @@ int main( )
         glClearColor( 0.05f, 0.05f, 0.05f, 1.0f );
         glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
         
-        
         glm::mat4 model;
         glm::mat4 view ;
-        
-        
         
         lightingShader.Use( );
         GLint viewPosLoc = glGetUniformLocation( lightingShader.Program, "viewPos" );
         glUniform3f( viewPosLoc, camera.GetPosition( ).x, camera.GetPosition( ).y, camera.GetPosition( ).z);
         
-        
+    
         // Directional light
         glUniform3f( glGetUniformLocation( lightingShader.Program, "dirLight.direction" ), -0.2f, -1.0f, -0.3f );
         glUniform3f( glGetUniformLocation( lightingShader.Program, "dirLight.ambient" ), 0.5f, 0.5f, 0.5f );
@@ -238,39 +230,12 @@ int main( )
         
         // Point light 1
         glUniform3f( glGetUniformLocation( lightingShader.Program, "pointLights[0].position" ), pointLightPositions[0].x, pointLightPositions[0].y, pointLightPositions[0].z );
-        glUniform3f( glGetUniformLocation( lightingShader.Program, "pointLights[0].ambient" ), 0.05f, 0.05f, 0.05f );
+        glUniform3f( glGetUniformLocation( lightingShader.Program, "pointLights[0].ambient" ), 0.5f, 0.5f, 0.5f );
         glUniform3f( glGetUniformLocation( lightingShader.Program, "pointLights[0].diffuse" ), 0.8f, 0.8f, 0.8f );
         glUniform3f( glGetUniformLocation( lightingShader.Program, "pointLights[0].specular" ), 1.0f, 1.0f, 1.0f );
-        glUniform1f( glGetUniformLocation( lightingShader.Program, "pointLights[0].constant" ), 1.0f );
+        glUniform1f( glGetUniformLocation( lightingShader.Program, "pointLights[0].constant" ), 0.8f );
         glUniform1f( glGetUniformLocation( lightingShader.Program, "pointLights[0].linear" ), 0.09f );
         glUniform1f( glGetUniformLocation( lightingShader.Program, "pointLights[0].quadratic" ), 0.032f );
-        
-        // Point light 2
-        glUniform3f( glGetUniformLocation( lightingShader.Program, "pointLights[1].position" ), pointLightPositions[1].x, pointLightPositions[1].y, pointLightPositions[1].z );
-        glUniform3f( glGetUniformLocation( lightingShader.Program, "pointLights[1].ambient" ), 0.05f, 0.05f, 0.05f );
-        glUniform3f( glGetUniformLocation( lightingShader.Program, "pointLights[1].diffuse" ), 0.8f, 0.8f, 0.8f );
-        glUniform3f( glGetUniformLocation( lightingShader.Program, "pointLights[1].specular" ), 1.0f, 1.0f, 1.0f );
-        glUniform1f( glGetUniformLocation( lightingShader.Program, "pointLights[1].constant" ), 1.0f );
-        glUniform1f( glGetUniformLocation( lightingShader.Program, "pointLights[1].linear" ), 0.09f );
-        glUniform1f( glGetUniformLocation( lightingShader.Program, "pointLights[1].quadratic" ), 0.032f );
-        
-        // Point light 3
-        glUniform3f( glGetUniformLocation( lightingShader.Program, "pointLights[2].position" ), pointLightPositions[2].x, pointLightPositions[2].y, pointLightPositions[2].z );
-        glUniform3f( glGetUniformLocation( lightingShader.Program, "pointLights[2].ambient" ), 0.05f, 0.05f, 0.05f );
-        glUniform3f( glGetUniformLocation( lightingShader.Program, "pointLights[2].diffuse" ), 0.8f, 0.8f, 0.8f );
-        glUniform3f( glGetUniformLocation( lightingShader.Program, "pointLights[2].specular" ), 1.0f, 1.0f, 1.0f );
-        glUniform1f( glGetUniformLocation( lightingShader.Program, "pointLights[2].constant" ), 1.0f );
-        glUniform1f( glGetUniformLocation( lightingShader.Program, "pointLights[2].linear" ), 0.09f );
-        glUniform1f( glGetUniformLocation( lightingShader.Program, "pointLights[2].quadratic" ), 0.032f );
-        
-        // Point light 4
-        glUniform3f( glGetUniformLocation( lightingShader.Program, "pointLights[3].position" ), pointLightPositions[3].x, pointLightPositions[3].y, pointLightPositions[3].z );
-        glUniform3f( glGetUniformLocation( lightingShader.Program, "pointLights[3].ambient" ), 0.05f, 0.05f, 0.05f );
-        glUniform3f( glGetUniformLocation( lightingShader.Program, "pointLights[3].diffuse" ), 0.8f, 0.8f, 0.8f );
-        glUniform3f( glGetUniformLocation( lightingShader.Program, "pointLights[3].specular" ), 1.0f, 1.0f, 1.0f );
-        glUniform1f( glGetUniformLocation( lightingShader.Program, "pointLights[3].constant" ), 1.0f );
-        glUniform1f( glGetUniformLocation( lightingShader.Program, "pointLights[3].linear" ), 0.09f );
-        glUniform1f( glGetUniformLocation( lightingShader.Program, "pointLights[3].quadratic" ), 0.032f );
         
         // SpotLight
         glUniform3f( glGetUniformLocation( lightingShader.Program, "spotLight.position" ), camera.GetPosition( ).x, camera.GetPosition( ).y, camera.GetPosition( ).z );
@@ -287,11 +252,7 @@ int main( )
         
         view = camera.GetViewMatrix( );
         
-        
-       
-        model = glm::translate(model, glm::vec3(1.2f, 3.0f, 5.0f));
-        model = glm::scale(model, glm::vec3(0.5f, 0.5f, 0.5f));
-        
+        model = glm::translate(model, glm::vec3(10.0f, 10.0f, 10.0f));//        model = glm::scale(model, glm::vec3(0.5f, 0.5f, 0.5f));
         
         GLint modelLoc = glGetUniformLocation( lightingShader.Program, "model" );
         GLint viewLoc = glGetUniformLocation( lightingShader.Program, "view" );
@@ -302,6 +263,8 @@ int main( )
         glUniformMatrix4fv( projLoc, 1, GL_FALSE, glm::value_ptr( projection ) );
         
         ourModel2.Draw( lightingShader );
+        
+        startModel.Draw(lightingShader);
         
         model = glm::mat4(1.0);
         
@@ -383,16 +346,22 @@ void KeyCallback( GLFWwindow *window, int key, int scancode, int action, int mod
             keys[key] = false;
         }
     }
+    
 }
 
 void MouseCallback( GLFWwindow *window, double xPos, double yPos )
 {
+    
+    
     if ( firstMouse )
     {
         lastX = xPos;
         lastY = yPos;
         firstMouse = false;
+        
+        
     }
+
     
     GLfloat xOffset = xPos - lastX;
     GLfloat yOffset = lastY - yPos;  // Reversed since y-coordinates go from bottom to left
@@ -402,3 +371,114 @@ void MouseCallback( GLFWwindow *window, double xPos, double yPos )
     
     camera.ProcessMouseMovement( xOffset, yOffset );
 }
+
+void MouseButtonCallback(GLFWwindow *window, int button, int actions, int mods){
+    
+    double xpos, ypos;
+    
+    
+    if (button == GLFW_MOUSE_BUTTON_LEFT && actions == GLFW_PRESS){
+        glfwGetCursorPos(window, &xpos, &ypos);
+        processSelection( xpos, 600 - ypos - 1);
+        glfwSwapBuffers(window);
+    }
+    
+}
+
+void processSelection(double xx, double yy) {
+    
+    
+    
+    unsigned char res[4];
+    GLint viewport[4];
+    
+    glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    
+    
+    glm::mat4 model;
+    
+    glm::mat4 projection = glm::perspective( camera.GetZoom( ), ( float )SCREEN_WIDTH/( float )SCREEN_HEIGHT, 0.1f, 1000.0f );
+    
+    
+    
+    Model startModel( "resources/models/menu/start.obj" );
+    Shader pickingShader("resources/shaders/picking.vs", "resources/shaders/picking.frag");
+    
+    pickingShader.Use();
+    GLint codeLoc = glGetUniformLocation( pickingShader.Program, "id" );
+    
+    
+    
+    model = glm::scale(model, glm::vec3(10000.0f,10000.0f,10000.0f));
+    model = glm::translate(model, glm::vec3(10.0f, 10.0f, 10.0f));
+    GLint modelLoc = glGetUniformLocation( pickingShader.Program, "model" );
+
+    GLint projLoc = glGetUniformLocation( pickingShader.Program, "projection" );
+    
+    glUniform1f(codeLoc, 1 );
+    
+    glUniformMatrix4fv( modelLoc, 1, GL_FALSE, glm::value_ptr( model ) );
+
+    glUniformMatrix4fv( projLoc, 1, GL_FALSE, glm::value_ptr( projection ) );
+    
+    
+    startModel.Draw(pickingShader);
+    
+    
+    glGetIntegerv(GL_VIEWPORT, viewport);
+    glReadPixels(xx,  yy, 1,1,GL_RGBA, GL_UNSIGNED_BYTE, &res);
+    switch(res[0]) {
+        case 0: printf("NOTHING xPos %lf yPos %lf pixel data %lf \n", xx, yy, res[0]); break;
+        case 1: printf("Yellow xPos %lf yPos %lf pixel data %lf\n", xx, yy, res[0]); break;
+        
+        default:std::cout << res[0] << std::endl;
+    }
+    
+    
+    
+}
+
+//PICKING
+
+/*if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT)){
+    
+    // Clear the screen in white
+    glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    
+    pickingShader.Use();
+    
+    int r = (startModel.id & 0x000000FF) >>  0;
+    int g = (startModel.id & 0x0000FF00) >>  8;
+    int b = (startModel.id & 0x00FF0000) >> 16;
+    
+    glUniform4f(glGetUniformLocation(pickingShader.Program, "PickingColor"), r/255.0f, g/255.0f, b/255.0f, 1.0f);
+    
+    startModel.Draw(pickingShader);
+    
+    glFlush();
+    glFinish();
+    
+    unsigned char data[4];
+    glReadPixels(1024/2, 768/2,1,1, GL_RGBA, GL_UNSIGNED_BYTE, data);
+    
+    // Convert the color back to an integer ID
+    int pickedID =
+    data[0] +
+    data[1] * 256 +
+    data[2] * 256*256;
+    
+    if (pickedID == 0x00ffffff){ // Full white, must be the background !
+        std::cout << "BACKGROUND" << std::endl;
+        }else{
+            std::ostringstream oss;
+            std::cout << "DUNNO" << std::endl;
+        }
+        
+        glfwSwapBuffers(window);
+        
+        }
+
+
+*/

@@ -16,9 +16,6 @@
 		AB2692D7206E86C400D2582F /* image_helper.c in Sources */ = {isa = PBXBuildFile; fileRef = AB2692C4206E86C300D2582F /* image_helper.c */; };
 		AB2692D8206E86C400D2582F /* image_DXT.c in Sources */ = {isa = PBXBuildFile; fileRef = AB2692CC206E86C400D2582F /* image_DXT.c */; };
 		AB2692D9206E86C400D2582F /* SOIL2.c in Sources */ = {isa = PBXBuildFile; fileRef = AB2692D5206E86C400D2582F /* SOIL2.c */; };
-		AB3F607D20A0919800224304 /* BulletCollision.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AB3F607720A0813D00224304 /* BulletCollision.framework */; };
-		AB3F607E20A091CA00224304 /* Bullet3Common.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AB3F607B20A0817E00224304 /* Bullet3Common.framework */; };
-		AB3F608020A091EA00224304 /* BulletDynamics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AB3F607F20A091EA00224304 /* BulletDynamics.framework */; };
 		ABAFC096207E609B001007F9 /* libassimp.4.1.0.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = ABAFC095207E609B001007F9 /* libassimp.4.1.0.dylib */; };
 /* End PBXBuildFile section */
 
@@ -81,7 +78,6 @@
 		AB3F607920A0816400224304 /* LinearMath.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = LinearMath.framework; path = ../../../../../Library/Frameworks/LinearMath.framework; sourceTree = "<group>"; };
 		AB3F607B20A0817E00224304 /* Bullet3Common.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Bullet3Common.framework; path = ../../../../../Library/Frameworks/Bullet3Common.framework; sourceTree = "<group>"; };
 		AB3F607F20A091EA00224304 /* BulletDynamics.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = BulletDynamics.framework; path = ../../../../../Library/Frameworks/BulletDynamics.framework; sourceTree = "<group>"; };
-		AB3F608420A0969C00224304 /* BULLET */ = {isa = PBXFileReference; lastKnownFileType = folder; path = BULLET; sourceTree = "<group>"; };
 		ABAFC094207BBF50001007F9 /* Mesh.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Mesh.h; sourceTree = "<group>"; };
 		ABAFC095207E609B001007F9 /* libassimp.4.1.0.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libassimp.4.1.0.dylib; path = ../../../../../usr/local/Cellar/assimp/4.1.0/lib/libassimp.4.1.0.dylib; sourceTree = "<group>"; };
 		ABAFC097207E6900001007F9 /* Model.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Model.h; sourceTree = "<group>"; };
@@ -92,9 +88,6 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				AB3F608020A091EA00224304 /* BulletDynamics.framework in Frameworks */,
-				AB3F607E20A091CA00224304 /* Bullet3Common.framework in Frameworks */,
-				AB3F607D20A0919800224304 /* BulletCollision.framework in Frameworks */,
 				ABAFC096207E609B001007F9 /* libassimp.4.1.0.dylib in Frameworks */,
 				AB2692B020695A5000D2582F /* libGLEW.2.1.0.dylib in Frameworks */,
 				AB2692AF20695A1000D2582F /* libglfw.3.2.dylib in Frameworks */,
@@ -126,7 +119,6 @@
 		AB26929C20694FEB00D2582F /* OpenGL_2 */ = {
 			isa = PBXGroup;
 			children = (
-				AB3F608420A0969C00224304 /* BULLET */,
 				AB2692AE2069597A00D2582F /* resources */,
 				AB26929D20694FEB00D2582F /* main.cpp */,
 				AB2692AB206958B900D2582F /* Shader.h */,
@@ -210,7 +202,7 @@
 		AB26929220694FEB00D2582F /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
-				LastUpgradeCheck = 0920;
+				LastUpgradeCheck = 0930;
 				ORGANIZATIONNAME = "Yevgen Ponomarenko";
 				TargetAttributes = {
 					AB26929920694FEB00D2582F = {
@@ -266,6 +258,7 @@
 				CLANG_WARN_BOOL_CONVERSION = YES;
 				CLANG_WARN_COMMA = YES;
 				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
 				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
 				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
 				CLANG_WARN_EMPTY_BODY = YES;
@@ -273,6 +266,7 @@
 				CLANG_WARN_INFINITE_RECURSION = YES;
 				CLANG_WARN_INT_CONVERSION = YES;
 				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
 				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
 				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
 				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
@@ -321,6 +315,7 @@
 				CLANG_WARN_BOOL_CONVERSION = YES;
 				CLANG_WARN_COMMA = YES;
 				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
 				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
 				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
 				CLANG_WARN_EMPTY_BODY = YES;
@@ -328,6 +323,7 @@
 				CLANG_WARN_INFINITE_RECURSION = YES;
 				CLANG_WARN_INT_CONVERSION = YES;
 				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
 				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
 				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
 				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;

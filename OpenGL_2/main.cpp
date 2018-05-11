@@ -32,6 +32,8 @@ void MouseCallback( GLFWwindow *window, double xPos, double yPos );
 void MouseButtonCallback( GLFWwindow *window, int button, int actions, int mods );
 void DoMovement( );
 void processSelection(double xx, double yy);
+void renderPickingScene(Model model1, glm::mat4 view, glm::mat4 model, glm::mat4 projection);
+void updateMatrices(glm::mat4 view, glm::mat4 projection, glm::mat4 model, Shader lightingShader);
 
 
 // Window dimensions
@@ -52,7 +54,7 @@ glm::vec3 lightPos( 1.2f, 1.0f, 2.0f );
 GLfloat deltaTime = 0.0f;    // Time between current frame and last frame
 GLfloat lastFrame = 0.0f;      // Time of last frame
 
-
+bool mouseClicked = false;
 
 int main( )
 {
@@ -102,8 +104,9 @@ int main( )
     
     // OpenGL options
     glEnable( GL_DEPTH_TEST );
-    
-    
+    glEnable(GL_STENCIL_TEST);
+    glStencilFunc(GL_NOTEQUAL, 1, 0xFF);
+    glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE);
     
     // Setup and compile our shaders
     Shader lightingShader( "resources/shaders/lighting.vs", "resources/shaders/lighting.frag" );
@@ -113,9 +116,12 @@ int main( )
     
     Model ourModel2( "resources/models/nanosuit.obj" );
     Model bridgeModel( "resources/models/bridge/bridge.obj" );
-    Model startModel( "resources/models/menu/start.obj" );
+   // Model startModel( "resources/models/menu/start.obj" );
+    Model thorModel( "resources/models/Hammer/hammer.obj" );
+    Model islandModel ( "resources/models/Island/low-poly-mill.obj" );
+    Model hulkModel( "resources/models/Hulk/untitled.obj" );
     
-
+    
     
     
     GLfloat skyboxVertices[] = {
@@ -169,7 +175,7 @@ int main( )
         glm::vec3(  -4.0f,  2.0f, -12.0f    ),
         glm::vec3(  0.0f,  0.0f, -3.0f      )
     };
-
+    
     
     // Setup skybox VAO
     GLuint skyboxVAO, skyboxVBO;
@@ -183,7 +189,7 @@ int main( )
     glBindVertexArray(0);
     
     // Load textures
-    GLuint cubeTexture = TextureLoading::LoadTexture( "resources/images/container2.png" );
+   
     
     // Cubemap (Skybox)
     vector<const GLchar*> faces;
@@ -212,7 +218,9 @@ int main( )
         
         // Clear the colorbuffer
         glClearColor( 0.05f, 0.05f, 0.05f, 1.0f );
-        glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
+        glClearStencil(0);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+       
         
         glm::mat4 model;
         glm::mat4 view ;
@@ -221,7 +229,7 @@ int main( )
         GLint viewPosLoc = glGetUniformLocation( lightingShader.Program, "viewPos" );
         glUniform3f( viewPosLoc, camera.GetPosition( ).x, camera.GetPosition( ).y, camera.GetPosition( ).z);
         
-    
+        
         // Directional light
         glUniform3f( glGetUniformLocation( lightingShader.Program, "dirLight.direction" ), -0.2f, -1.0f, -0.3f );
         glUniform3f( glGetUniformLocation( lightingShader.Program, "dirLight.ambient" ), 0.5f, 0.5f, 0.5f );
@@ -252,29 +260,37 @@ int main( )
         
         view = camera.GetViewMatrix( );
         
-        model = glm::translate(model, glm::vec3(10.0f, 10.0f, 10.0f));//        model = glm::scale(model, glm::vec3(0.5f, 0.5f, 0.5f));
+        model = glm::translate(model, glm::vec3(5.0f, 2.0f, 1.0f));//        model = glm::scale(model, glm::vec3(0.5f, 0.5f, 0.5f));
         
-        GLint modelLoc = glGetUniformLocation( lightingShader.Program, "model" );
-        GLint viewLoc = glGetUniformLocation( lightingShader.Program, "view" );
-        GLint projLoc = glGetUniformLocation( lightingShader.Program, "projection" );
+        updateMatrices(view, projection, model, lightingShader);
         
-        glUniformMatrix4fv( modelLoc, 1, GL_FALSE, glm::value_ptr( model ) );
-        glUniformMatrix4fv( viewLoc, 1, GL_FALSE, glm::value_ptr( view ) );
-        glUniformMatrix4fv( projLoc, 1, GL_FALSE, glm::value_ptr( projection ) );
-        
+        glStencilFunc(GL_ALWAYS, 100, 0xFF);
+        glStencilMask(0xFF);
         ourModel2.Draw( lightingShader );
         
-        startModel.Draw(lightingShader);
-        
+        glStencilFunc(GL_ALWAYS, 200, 0xFF);
+        glStencilMask(0xFF);
+        //startModel.Draw(lightingShader);
+        thorModel.Draw(lightingShader);
         model = glm::mat4(1.0);
         
         model = glm::scale(model, glm::vec3(5.0f,8.0f,5.0f));
         
-        glUniformMatrix4fv( modelLoc, 1, GL_FALSE, glm::value_ptr( model ) );
+        updateMatrices(view, projection, model, lightingShader);
+        glStencilFunc(GL_ALWAYS, 300, 0xFF);
         bridgeModel.Draw( lightingShader );
-
+        islandModel.Draw( lightingShader );
         
+        model = glm::mat4(1.0);
         
+        model = glm::scale(model, glm::vec3(4 * 20.0f,4 * 30.0f,4 * 30.0f));
+        
+        model = glm::translate(model, glm::vec3(0.2f/4.0, 0.15f/4.0, 0.0f));
+        
+        updateMatrices(view, projection, model, lightingShader);
+       
+        hulkModel.Draw(lightingShader);
+    
         
         // Draw skybox as last
         glDepthFunc( GL_LEQUAL );  // Change depth function so depth test passes when values are equal to depth buffer's content
@@ -289,7 +305,7 @@ int main( )
         glBindTexture( GL_TEXTURE_CUBE_MAP, cubemapTexture );
         glDrawArrays( GL_TRIANGLES, 0, 36 );
         glBindVertexArray( 0 );
-        glDepthFunc( GL_LESS ); // Set depth function back to default
+        glDepthFunc( GL_LESS ); // Set depth function back to defaultdssssd
         
         
         
@@ -361,7 +377,7 @@ void MouseCallback( GLFWwindow *window, double xPos, double yPos )
         
         
     }
-
+    
     
     GLfloat xOffset = xPos - lastX;
     GLfloat yOffset = lastY - yPos;  // Reversed since y-coordinates go from bottom to left
@@ -369,8 +385,11 @@ void MouseCallback( GLFWwindow *window, double xPos, double yPos )
     lastX = xPos;
     lastY = yPos;
     
-    camera.ProcessMouseMovement( xOffset, yOffset );
+    if(camera.move)
+        camera.ProcessMouseMovement( xOffset, yOffset );
 }
+
+
 
 void MouseButtonCallback(GLFWwindow *window, int button, int actions, int mods){
     
@@ -378,107 +397,99 @@ void MouseButtonCallback(GLFWwindow *window, int button, int actions, int mods){
     
     
     if (button == GLFW_MOUSE_BUTTON_LEFT && actions == GLFW_PRESS){
+        mouseClicked = true;
         glfwGetCursorPos(window, &xpos, &ypos);
-        processSelection( xpos, 600 - ypos - 1);
-        glfwSwapBuffers(window);
+        processSelection( xpos,  ypos);
     }
     
 }
 
-void processSelection(double xx, double yy) {
-    
-    
-    
-    unsigned char res[4];
-    GLint viewport[4];
-    
-    glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    
-    
-    glm::mat4 model;
-    
-    glm::mat4 projection = glm::perspective( camera.GetZoom( ), ( float )SCREEN_WIDTH/( float )SCREEN_HEIGHT, 0.1f, 1000.0f );
-    
-    
-    
-    Model startModel( "resources/models/menu/start.obj" );
-    Shader pickingShader("resources/shaders/picking.vs", "resources/shaders/picking.frag");
-    
-    pickingShader.Use();
-    GLint codeLoc = glGetUniformLocation( pickingShader.Program, "id" );
-    
-    
-    
-    model = glm::scale(model, glm::vec3(10000.0f,10000.0f,10000.0f));
-    model = glm::translate(model, glm::vec3(10.0f, 10.0f, 10.0f));
-    GLint modelLoc = glGetUniformLocation( pickingShader.Program, "model" );
 
-    GLint projLoc = glGetUniformLocation( pickingShader.Program, "projection" );
+void processSelection(double xx, double yy) {
+   
     
-    glUniform1f(codeLoc, 1 );
+    
+    unsigned char res = 0;
+    GLint viewport[4];
+    glGetIntegerv(GL_VIEWPORT, viewport);
+    
+    
+    glReadPixels(xx, viewport[3] - 1 - yy, 1, 1, GL_STENCIL_INDEX, GL_UNSIGNED_BYTE, &res);
+   
+    
+    if(res == 100){
+        printf("YELLOW xPos %lf yPos %lf \n", xx, viewport[3] - 1 - yy);
+    }else if (res == 200){
+        printf("RED xPos %lf yPos %lf \n", xx, viewport[3] - 1 - yy );
+    }else{
+        printf("whatevera xPos %lf yPos %lf \n", xx, viewport[3] - 1 - yy );
+    }
+    
+}
+
+
+void renderPickingScene(Model model1, glm::mat4 view, glm::mat4 model, glm::mat4 projection){
+    Shader lightingShader("resources/shaders/lighting.vs", "resources/shaders/lighting.frag");
+    
+    
+    glClearStencil(0);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+    
+   
+    
+    glEnable(GL_STENCIL_TEST);
+    glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE);
+    
+    
+    
+    lightingShader.Use();
+    
+    
+    
+    //        model = glm::scale(model, glm::vec3(0.5f, 0.5f, 0.5f));
+    
+    GLint modelLoc = glGetUniformLocation( lightingShader.Program, "model" );
+    GLint viewLoc = glGetUniformLocation(lightingShader.Program, "view" );
+    GLint projLoc = glGetUniformLocation( lightingShader.Program, "projection" );
     
     glUniformMatrix4fv( modelLoc, 1, GL_FALSE, glm::value_ptr( model ) );
-
+    glUniformMatrix4fv( viewLoc, 1, GL_FALSE, glm::value_ptr( view ) );
     glUniformMatrix4fv( projLoc, 1, GL_FALSE, glm::value_ptr( projection ) );
     
     
-    startModel.Draw(pickingShader);
+    model = glm::translate(model, glm::vec3(1.0f, 1.0f, 1.0f));
+    model = glm::scale(model, glm::vec3(0.5f, 0.5f, 0.5f));
+    
+    glStencilFunc(GL_ALWAYS, 100, -1);
     
     
-    glGetIntegerv(GL_VIEWPORT, viewport);
-    glReadPixels(xx,  yy, 1,1,GL_RGBA, GL_UNSIGNED_BYTE, &res);
-    switch(res[0]) {
-        case 0: printf("NOTHING xPos %lf yPos %lf pixel data %lf \n", xx, yy, res[0]); break;
-        case 1: printf("Yellow xPos %lf yPos %lf pixel data %lf\n", xx, yy, res[0]); break;
-        
-        default:std::cout << res[0] << std::endl;
-    }
+    model1.Draw( lightingShader );
     
     
+    //    model = glm::mat4(1.0f);
+    //    model = glm::translate(model, glm::vec3(1.0f, 2.0f, 0.0f));
+    //    model = glm::scale(model, glm::vec3(0.5f, 0.5f, 0.5f));
+    //    glUniform1f(codeLoc, 0.5f );
+    //
+    //    glUniformMatrix4fv( modelLoc, 1, GL_FALSE, glm::value_ptr( model ) );
+    //    glUniformMatrix4fv( viewLoc, 1, GL_FALSE, glm::value_ptr( view ) );
+    //    glUniformMatrix4fv( projLoc, 1, GL_FALSE, glm::value_ptr( projection ) );
+    //    startModel.Draw(pickingShader);
+    //
     
 }
 
-//PICKING
 
-/*if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT)){
+void updateMatrices(glm::mat4 view, glm::mat4 projection, glm::mat4 model, Shader lightingShader){
     
-    // Clear the screen in white
-    glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     
-    pickingShader.Use();
+    GLint modelLoc = glGetUniformLocation( lightingShader.Program, "model" );
+    GLint viewLoc = glGetUniformLocation(lightingShader.Program, "view" );
+    GLint projLoc = glGetUniformLocation( lightingShader.Program, "projection" );
     
-    int r = (startModel.id & 0x000000FF) >>  0;
-    int g = (startModel.id & 0x0000FF00) >>  8;
-    int b = (startModel.id & 0x00FF0000) >> 16;
+    glUniformMatrix4fv( modelLoc, 1, GL_FALSE, glm::value_ptr( model ) );
+    glUniformMatrix4fv( viewLoc, 1, GL_FALSE, glm::value_ptr( view ) );
+    glUniformMatrix4fv( projLoc, 1, GL_FALSE, glm::value_ptr( projection ) );
     
-    glUniform4f(glGetUniformLocation(pickingShader.Program, "PickingColor"), r/255.0f, g/255.0f, b/255.0f, 1.0f);
     
-    startModel.Draw(pickingShader);
-    
-    glFlush();
-    glFinish();
-    
-    unsigned char data[4];
-    glReadPixels(1024/2, 768/2,1,1, GL_RGBA, GL_UNSIGNED_BYTE, data);
-    
-    // Convert the color back to an integer ID
-    int pickedID =
-    data[0] +
-    data[1] * 256 +
-    data[2] * 256*256;
-    
-    if (pickedID == 0x00ffffff){ // Full white, must be the background !
-        std::cout << "BACKGROUND" << std::endl;
-        }else{
-            std::ostringstream oss;
-            std::cout << "DUNNO" << std::endl;
-        }
-        
-        glfwSwapBuffers(window);
-        
-        }
-
-
-*/
+}

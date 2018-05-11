@@ -7,5 +7,5 @@ out vec4 colorID;
 
 void main()
 {
-    colorID = vec4(id, 1, -depth/1000, 0);
+    colorID = vec4(0.8f, 0.7f,0.7f,0.7f);
 }

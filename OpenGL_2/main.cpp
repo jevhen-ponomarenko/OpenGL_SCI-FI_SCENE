@@ -270,8 +270,12 @@ int main( )
         
         glStencilFunc(GL_ALWAYS, 200, 0xFF);
         glStencilMask(0xFF);
-        //startModel.Draw(lightingShader);
+        
+        model = glm::translate(model, glm::vec3(-2.0f, 1.0f, 0.0f));
+        
+        updateMatrices(view, projection, model, lightingShader);
         thorModel.Draw(lightingShader);
+        
         model = glm::mat4(1.0);
         
         model = glm::scale(model, glm::vec3(5.0f,8.0f,5.0f));
@@ -279,13 +283,22 @@ int main( )
         updateMatrices(view, projection, model, lightingShader);
         glStencilFunc(GL_ALWAYS, 300, 0xFF);
         bridgeModel.Draw( lightingShader );
+        
+        
+        model = glm::mat4(1.0);
+        
+        model = glm::scale(model, glm::vec3(10.0f,10.0f,10.0f));
+        
+        model = glm::translate(model, glm::vec3(4.0f, 1.0f, 0.0f));
+        
+        updateMatrices(view, projection, model, lightingShader);
         islandModel.Draw( lightingShader );
         
         model = glm::mat4(1.0);
         
         model = glm::scale(model, glm::vec3(4 * 20.0f,4 * 30.0f,4 * 30.0f));
         
-        model = glm::translate(model, glm::vec3(0.2f/4.0, 0.15f/4.0, 0.0f));
+        model = glm::translate(model, glm::vec3(0.2f/4.0, 0.15f/3.0, 0.0f));
         
         updateMatrices(view, projection, model, lightingShader);
        
